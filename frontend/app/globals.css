@@ -190,9 +190,12 @@ h1,h2,h3,p { margin-top:0; }
 .habit-row+.habit-row { border-top:1px solid #f6d5b21f; }
 .habit-row-copy { min-width:0; flex:1; padding:14px 8px 14px 0; border:0; background:transparent; text-align:left; }
 .habit-row-copy h2 { overflow:hidden; margin:0 0 3px; color:#fffaf2; font-family:var(--font-display); font-size:17px; font-weight:610; letter-spacing:-.025em; text-overflow:ellipsis; white-space:nowrap; }
-.habit-row-copy p { display:flex; align-items:center; gap:5px; margin:0; color:#cda985; font-family:var(--font-nav); font-size:10px; font-weight:560; }
+.habit-row-copy p { display:flex; align-items:center; flex-wrap:wrap; gap:4px 9px; margin:0; color:#cda985; font-family:var(--font-nav); font-size:10px; font-weight:560; }
+.habit-row-status,.habit-row-streak { display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
+.habit-row-streak { color:#e4ad73; font-variant-numeric:tabular-nums; font-weight:700; }
 .habit-row-copy.done h2 { color:#fff3e7; font-weight:700; }
 .habit-row-copy.done p { color:#ffd1a8; font-weight:700; }
+.habit-row-copy.done .habit-row-streak { color:#ffe0b9; }
 .habit-row-copy p svg { flex:0 0 auto; }
 .habit-row-copy:disabled { cursor:wait; opacity:.65; }
 .habit-row-actions { display:flex; flex:0 0 auto; align-items:center; gap:5px; }

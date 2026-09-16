@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Ellipsis, LoaderCircle, Pencil, Trash2, X } from "lucide-react";
+import { Check, Ellipsis, Flame, LoaderCircle, Pencil, Trash2, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useApp } from "../components/app-provider";
 
@@ -84,7 +84,10 @@ export default function HabitsPage() {
                   <>
                     <button type="button" className={`habit-row-copy ${habit.completed_today ? "done" : ""}`} onClick={() => habit.completed_today ? undoCheckIn(habit.id) : checkIn(habit.id)} disabled={checkingInId === habit.id || busyId === habit.id} aria-pressed={habit.completed_today} aria-label={habit.completed_today ? `Undo check-in for ${habit.name}` : `Check in ${habit.name}`}>
                       <h2>{habit.name}</h2>
-                      <p>{checkingInId === habit.id ? <><LoaderCircle size={13} className="spin" /> Updating…</> : habit.completed_today ? "✓ Completed today · tap to undo" : habit.current_streak ? `${habit.current_streak} day streak · tap to check in` : "Tap to check in"}</p>
+                      <p>
+                        <span className="habit-row-status">{checkingInId === habit.id ? <><LoaderCircle size={13} className="spin" /> Updating…</> : habit.completed_today ? "✓ Done · tap to undo" : "Tap to check in"}</span>
+                        <span className="habit-row-streak"><Flame size={12} fill="currentColor" />{habit.current_streak} {habit.current_streak === 1 ? "day" : "days"}</span>
+                      </p>
                     </button>
                     <div className={`habit-row-actions ${menuId === habit.id ? "open" : ""}`}>
                       {menuId === habit.id && (
