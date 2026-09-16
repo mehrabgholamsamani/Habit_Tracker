@@ -1,147 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Check, ChevronDown, ChevronUp, CircleCheck, Flame, LoaderCircle, Sparkles, Trophy } from "lucide-react";
+import { useApp } from "./components/app-provider";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export default function DashboardPage() {
-  const [userId, setUserId] = useState<number | null>(null);
-  const [habits, setHabits] = useState<any[]>([]);
-  const [checkingInId, setCheckingInId] = useState<number | null>(null);
-  const [newHabitName, setNewHabitName] = useState("");
-
-  useEffect(() => {
-    fetch(`${API_URL}/users`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.length > 0) {
-          setUserId(data[0].id);
-        }
-      })
-      .catch((err) => {
-        console.log("failed to load user", err);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (userId === null) return;
-    fetch(`${API_URL}/habits`, {
-      headers: { "X-User-Id": String(userId) },
-    })
-      .then((res) => res.json())
-      .then((habitsData) => setHabits(habitsData))
-      .catch((err) => {
-        console.log("failed to load habits", err);
-      });
-  }, [userId]);
-
-  function handleCheckin(habitId: number) {
-    setCheckingInId(habitId);
-    fetch(`${API_URL}/habits/${habitId}/checkins`, {
-      method: "POST",
-      headers: { "X-User-Id": String(userId) },
-    })
-      .then((res) => res.json())
-      .then((updatedHabit) => {
-        setHabits((prev) =>
-          prev.map((h) => (h.id === updatedHabit.id ? updatedHabit : h))
-        );
-        setCheckingInId(null);
-      })
-      .catch((err) => {
-        console.log("checkin failed", err);
-        setCheckingInId(null);
-      });
-  }
-
-  function handleAddHabit() {
-    if (!newHabitName.trim()) return;
-    fetch(`${API_URL}/habits`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": String(userId),
-      },
-      body: JSON.stringify({ name: newHabitName }),
-    })
-      .then((res) => res.json())
-      .then((habit) => {
-        setHabits((prev) => [...prev, habit]);
-        setNewHabitName("");
-      })
-      .catch((err) => {
-        console.log("failed to add habit", err);
-      });
-  }
-
-  function handleRemoveHabit(habitId: number) {
-    fetch(`${API_URL}/habits/${habitId}`, {
-      method: "DELETE",
-      headers: { "X-User-Id": String(userId) },
-    })
-      .then(() => {
-        setHabits((prev) => prev.filter((h) => h.id !== habitId));
-      })
-      .catch((err) => {
-        console.log("failed to remove habit", err);
-      });
-  }
+export default function TodayPage() {
+  const { user, habits, loading, error, checkingInId, checkIn, undoCheckIn, openCreate } = useApp();
+  const completed = habits.filter((habit) => habit.completed_today).length;
+  const total = habits.length;
+  const progress = total ? Math.round((completed / total) * 100) : 0;
+  const currentStreak = habits.reduce((best, habit) => Math.max(best, habit.current_streak), 0);
+  const personalBest = habits.reduce((best, habit) => Math.max(best, habit.longest_streak), 0);
+  const nextHabit = habits.find((habit) => !habit.completed_today);
+  const allDone = total > 0 && completed === total;
 
   return (
-    <main style={{ padding: "2rem" }} className="min-h-screen bg-beige-100">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
-          <img src="/images/tiger-logo.png" alt="Habit Tracker" className="h-10 w-10" />
-          <h1 className="text-2xl font-semibold text-brand-900">Habit Tracker</h1>
-        </div>
-
-        <div className="mb-6 flex gap-2">
-          <input
-            value={newHabitName}
-            onChange={(e) => setNewHabitName(e.target.value)}
-            placeholder="New habit name"
-            className="border rounded px-2 py-1 flex-1"
-          />
-          <button
-            onClick={handleAddHabit}
-            className="bg-brand-500 hover:bg-brand-700 text-white px-4 py-2 rounded"
-          >
-            Add habit
-          </button>
-        </div>
-
-        <div className="grid gap-4">
-          {habits.map((habit) => (
-            <div
-              key={habit.id}
-              className="bg-white rounded-lg p-4 flex items-center justify-between border"
-              style={{ borderColor: "#e7dfd3" }}
-            >
-              <div>
-                <div className="font-medium text-brand-900">{habit.name}</div>
-                <div className="text-sm" style={{ color: "#946b3f" }}>
-                  Current streak: {habit.current_streak} days &middot; best {habit.longest_streak}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleCheckin(habit.id)}
-                  disabled={checkingInId === habit.id}
-                  className="bg-brand-500 hover:bg-brand-700 text-white px-4 py-2 rounded"
-                >
-                  Check in
-                </button>
-                <button
-                  onClick={() => handleRemoveHabit(habit.id)}
-                  className="text-sm text-brand-700 hover:text-brand-900 px-2"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
+    <section className="today-dashboard">
+      <div className="sanctuary-hero">
+        <img className="sanctuary-image" src="/images/tora-sanctuary-home.png" alt="Tora guiding a glowing focus crystal in a bright sanctuary" />
+        <header className="sanctuary-topbar">
+          <strong>Hi, {user?.name.split(" ")[0] ?? "Tiger"}</strong>
+          <div className="sanctuary-actions"><span className="streak-chip"><Flame size={17} fill="currentColor" />{currentStreak}</span></div>
+        </header>
+        <div className="sanctuary-score-zone">
+          <div className="momentum-score"><span>Today</span><strong>{loading ? "—" : progress}</strong><small>%</small>{progress > 0 && <ChevronUp size={22} aria-label="Progressing" />}</div>
+          <div className="score-connector" aria-hidden="true" />
+          <div className="momentum-metrics" aria-label="Habit summary">
+            <article><div><CircleCheck size={17} /><strong>{completed}/{total}</strong></div><span>Complete</span></article>
+            <article><div><Flame size={17} /><strong>{currentStreak}</strong></div><span>Streak</span></article>
+            <article><div><Trophy size={17} /><strong>{personalBest}</strong></div><span>Best</span></article>
+          </div>
         </div>
       </div>
-    </main>
+
+      <div className="momentum-panel">
+        {error && <div className="notice notice-error">{error}</div>}
+        {!loading && (nextHabit ? (
+          <article className="next-habit-card">
+            <div className="next-habit-title"><div><p>Up next</p><h2>{nextHabit.name}</h2></div></div>
+            <button type="button" className="next-check-button" disabled={checkingInId === nextHabit.id} onClick={() => checkIn(nextHabit.id)} aria-label={`Check in ${nextHabit.name}`}>{checkingInId === nextHabit.id ? <LoaderCircle size={22} className="spin" /> : <Check size={24} strokeWidth={2.8} />}</button>
+          </article>
+        ) : allDone ? (
+          <article className="next-habit-card all-done"><div className="next-habit-title"><div><p>Today is complete</p><h2>Beautiful work.</h2></div><div className="next-complete-crystal" aria-hidden="true"><Check size={24} strokeWidth={2.8} /></div></div></article>
+        ) : (
+          <article className="next-habit-card empty-next"><div className="next-habit-title"><div><p>Your first step</p><h2>Choose one small habit.</h2></div><div className="next-orb"><Sparkles size={24} /></div></div><button className="next-create-button" onClick={openCreate}>Create</button></article>
+        ))}
+
+        {total > 0 && <details className="all-habits-drawer" open><summary><span>Today&apos;s habits</span><span>{completed}/{total}<ChevronDown size={17} /></span></summary><div className="compact-habit-list">{habits.map((habit) => { const updating = checkingInId === habit.id; return <button type="button" key={habit.id} className={habit.completed_today ? "done" : ""} disabled={updating} onClick={() => habit.completed_today ? undoCheckIn(habit.id) : checkIn(habit.id)} aria-pressed={habit.completed_today} aria-label={habit.completed_today ? `Undo check-in for ${habit.name}` : `Check in ${habit.name}`}><strong>{habit.name}</strong><span>{updating ? <><LoaderCircle size={15} className="spin" /> Updating</> : habit.completed_today ? "Done · tap to undo" : "Tap to check in"}</span></button>; })}</div></details>}
+      </div>
+    </section>
   );
 }

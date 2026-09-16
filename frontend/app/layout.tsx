@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/manrope";
 
 import "./globals.css";
+import { AppProvider } from "./components/app-provider";
 
 export const metadata: Metadata = {
-  title: "Habit Tracker",
-  description: "Track your daily habits",
+  title: "Focus Tiger",
+  description: "Turn small actions into lasting habits",
 };
 
 export default function RootLayout({
@@ -14,15 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body>{children}</body>
+      <body><AppProvider>{children}</AppProvider></body>
     </html>
   );
 }

@@ -14,7 +14,10 @@ from app.database import Base  # noqa: E402
 config = context.config
 
 if os.environ.get("DATABASE_URL"):
-    config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+    # ConfigParser treats percent signs in escaped passwords as interpolation.
+    config.set_main_option(
+        "sqlalchemy.url", os.environ["DATABASE_URL"].replace("%", "%%")
+    )
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
